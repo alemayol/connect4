@@ -1,153 +1,171 @@
 #include "../../include/AI.h"
 #include "../../include/Jugador.h"
+#include <iostream>
 
 AI::AI() {}
+AI::AI(ESTADO_SLOT rol) : rolDeJugador(rol) {}
 
-// Retorna columna en la cual jugara
-int AI::calcularJugada(ESTADO_SLOT (*parrilla)[7]) {
+bool AI::columnaValida(ESTADO_SLOT (*parrilla)[7], int col) {
 
-  int colCandidata = -1;
-  int fuerzaDeColCadidata = -1;
-  int fuerzaDeColActual = 0;
+  static const int filas = 6;
+  static const int columnas = 7;
+
+  return (col >= 0 && col < columnas && parrilla[0][col] == ESTADO_SLOT::VACIO);
+}
+
+bool AI::colocarFicha(ESTADO_SLOT (*parrilla)[7], int col) {
+
+  static const int filas = 6;
+  static const int columnas = 7;
+
+  if (!columnaValida(parrilla, col)) {
+    return false;
+  }
+
+  for (int i = filas - 1; i >= 0; i--) {
+
+    if (col >= 0 && col < columnas && parrilla[i][col] == ESTADO_SLOT::VACIO) {
+      parrilla[i][col] = this->rolDeJugador;
+      return true;
+    }
+  }
+
+  return false;
+}
+
+void AI::deshacerJugada(ESTADO_SLOT (*parrilla)[7], int col,
+                        ESTADO_SLOT ficha) {
+
+  static const int filas = 6;
+
+  for (int i = 0; i < filas; i++) {
+    if (parrilla[i][col] == ficha) {
+      parrilla[i][col] = ESTADO_SLOT::VACIO;
+      return;
+    }
+  }
+}
+
+bool AI::jugadaGanadora(ESTADO_SLOT (*parrilla)[7], ESTADO_SLOT ficha) {
 
   static const int filas = 6;
   static const int columnas = 7;
 
   // Horizontal
-  for (int i = 0; i < filas; i++) {
-    for (int j = 0; j < columnas - 3; j++) {
-
-      if (parrilla[i][j] == ESTADO_SLOT::VACIO) {
-
-        // Verificamos si el juegador contrario gana
-        if (parrilla[i][j + 1] == ESTADO_SLOT::JUGADOR1 &&
-            parrilla[i][j + 2] == ESTADO_SLOT::JUGADOR1 &&
-            parrilla[i][j + 3] == ESTADO_SLOT::JUGADOR1) {
-          colCandidata = j;
-          return colCandidata;
-        }
-
-        if (parrilla[i][j + 1] == ESTADO_SLOT::JUGADOR2)
-          fuerzaDeColActual += 1;
-
-        if (parrilla[i][j + 1] == ESTADO_SLOT::JUGADOR2 &&
-            parrilla[i][j + 2] == ESTADO_SLOT::JUGADOR2)
-          fuerzaDeColActual += 1;
-
-        if (parrilla[i][j + 1] == ESTADO_SLOT::JUGADOR2 &&
-            parrilla[i][j + 2] == ESTADO_SLOT::JUGADOR2 &&
-            parrilla[i][j + 3] == ESTADO_SLOT::JUGADOR2)
-          fuerzaDeColActual += 7;
-      }
-      if (fuerzaDeColActual == 9)
-        return j;
-
-      if (fuerzaDeColActual > fuerzaDeColCadidata) {
-        colCandidata = j;
-        fuerzaDeColCadidata = fuerzaDeColActual;
-        fuerzaDeColActual = 0;
-      }
+  for (int c = 0; c < filas - 3; c++) {
+    for (int r = 0; r < filas; r++) {
+      if (parrilla[r][c] == ficha && parrilla[r][c + 1] == ficha &&
+          parrilla[r][c + 2] == ficha && parrilla[r][c + 3] == ficha)
+        return true;
     }
   }
   // Vertical
-  for (int i = 0; i < filas - 3; i++) {
+  for (int c = 0; c < columnas; c++) {
+    for (int r = 0; r < filas - 3; r++) {
+      if (parrilla[r][c] == ficha && parrilla[r + 1][c] == ficha &&
+          parrilla[r + 2][c] == ficha && parrilla[r + 3][c] == ficha)
+        return true;
+    }
+  }
+  // Diagonal Ascendente(/)
+  for (int c = 0; c < columnas - 3; c++) {
+    for (int r = 0; r < filas - 3; r++) { // Check from top-left down
+      if (parrilla[r][c] == ficha && parrilla[r + 1][c + 1] == ficha &&
+          parrilla[r + 2][c + 2] == ficha && parrilla[r + 3][c + 3] == ficha)
+        return true;
+    }
+  }
+  // Diagonal Descendente(\)
+  for (int c = 0; c < columnas - 3; c++) {
+    for (int r = 3; r < filas; r++) { // Check from bottom-left up
+      if (parrilla[r][c] == ficha && parrilla[r - 1][c + 1] == ficha &&
+          parrilla[r - 2][c + 2] == ficha && parrilla[r - 3][c + 3] == ficha)
+        return true;
+    }
+  }
+  return false;
+}
+
+// Retorna columna en la cual jugara
+int AI::calcularJugada(ESTADO_SLOT (*parrilla)[7]) {
+
+  static const int filas = 6;
+  static const int columnas = 7;
+
+  /*
+  std::cout << "-----------------------------" << std::endl;
+  for (int i = 0; i < filas; i++) {
     for (int j = 0; j < columnas; j++) {
-      if (parrilla[i][j] == ESTADO_SLOT::VACIO) {
+      std::cout << (int)parrilla[i][j] << " ";
+    }
+    std::cout << std::endl;
+  }
+  std::cout << "-----------------------------" << std::endl;
+*/
 
-        if (parrilla[i + 1][j] == ESTADO_SLOT::JUGADOR1 &&
-            parrilla[i + 2][j] == ESTADO_SLOT::JUGADOR1 &&
-            parrilla[i + 3][j] == ESTADO_SLOT::JUGADOR1) {
+  // Buscar victoria inmediata
+  for (int i = 0; i < filas; i++) {
+    for (int j = 0; j < columnas; j++) {
+      if (colocarFicha(parrilla, j)) {
+        if (jugadaGanadora(parrilla, this->rolDeJugador)) {
+          deshacerJugada(parrilla, j, this->rolDeJugador);
           return j;
         }
 
-        if (parrilla[i + 1][j] == ESTADO_SLOT::JUGADOR2)
-          fuerzaDeColActual += 1;
-
-        if (parrilla[i + 1][j] == ESTADO_SLOT::JUGADOR2 &&
-            parrilla[i + 2][j] == ESTADO_SLOT::JUGADOR2)
-          fuerzaDeColActual += 1;
-
-        if (parrilla[i + 1][j] == ESTADO_SLOT::JUGADOR2 &&
-            parrilla[i + 2][j] == ESTADO_SLOT::JUGADOR2 &&
-            parrilla[i + 3][j] == ESTADO_SLOT::JUGADOR2)
-          fuerzaDeColActual += 5;
-      }
-      if (fuerzaDeColActual == 9)
-        return j;
-
-      if (fuerzaDeColActual > fuerzaDeColCadidata) {
-        colCandidata = j;
-        fuerzaDeColCadidata = fuerzaDeColActual;
-        fuerzaDeColActual = 0;
+        deshacerJugada(parrilla, j, this->rolDeJugador);
       }
     }
   }
-  // Diagonal \ (Descendente)
-  for (int i = 0; i < filas - 3; i++) {
-    for (int j = 0; j < columnas - 3; j++) {
-      if (parrilla[i][j] == ESTADO_SLOT::VACIO) {
+  // Buscar bloquear a oponente en caso de victoria inmediata
+  for (int i = 0; i < filas; i++) {
+    for (int j = 0; j < columnas; j++) {
+      if (colocarFichaOp(parrilla, j)) {
 
-        if (parrilla[i + 1][j + 1] == ESTADO_SLOT::JUGADOR1 &&
-            parrilla[i + 2][j + 2] == ESTADO_SLOT::JUGADOR1 &&
-            parrilla[i + 3][j + 3] == ESTADO_SLOT::JUGADOR1) {
+        ESTADO_SLOT ficha = this->rolDeJugador == ESTADO_SLOT::JUGADOR1
+                                ? ESTADO_SLOT::JUGADOR2
+                                : ESTADO_SLOT::JUGADOR1;
+        if (jugadaGanadora(parrilla, ficha)) {
+          deshacerJugada(parrilla, j, ficha);
           return j;
         }
 
-        if (parrilla[i + 1][j + 1] == ESTADO_SLOT::JUGADOR2)
-          fuerzaDeColActual += 1;
-
-        if (parrilla[i + 1][j + 1] == ESTADO_SLOT::JUGADOR2 &&
-            parrilla[i + 2][j + 2] == ESTADO_SLOT::JUGADOR2)
-          fuerzaDeColActual += 1;
-
-        if (parrilla[i + 1][j + 1] == ESTADO_SLOT::JUGADOR2 &&
-            parrilla[i + 2][j + 2] == ESTADO_SLOT::JUGADOR2 &&
-            parrilla[i + 3][j + 3] == ESTADO_SLOT::JUGADOR2)
-          fuerzaDeColActual += 5;
-      }
-      if (fuerzaDeColActual == 9)
-        return j;
-
-      if (fuerzaDeColActual > fuerzaDeColCadidata) {
-        colCandidata = j;
-        fuerzaDeColCadidata = fuerzaDeColActual;
-        fuerzaDeColActual = 0;
-      }
-    }
-  }
-  // Diagonal / (Ascendente)
-  for (int i = 3; i < filas; i++) {
-    for (int j = 0; j < columnas - 3; j++) {
-      if (parrilla[i][j] == ESTADO_SLOT::VACIO) {
-
-        if (parrilla[i - 1][j + 1] == ESTADO_SLOT::JUGADOR1 &&
-            parrilla[i - 2][j + 2] == ESTADO_SLOT::JUGADOR1 &&
-            parrilla[i - 3][j + 3] == ESTADO_SLOT::JUGADOR1) {
-          return j;
-        }
-
-        if (parrilla[i - 1][j + 1] == ESTADO_SLOT::JUGADOR2)
-          fuerzaDeColActual += 1;
-
-        if (parrilla[i - 1][j + 1] == ESTADO_SLOT::JUGADOR2 &&
-            parrilla[i - 2][j + 2] == ESTADO_SLOT::JUGADOR2)
-          fuerzaDeColActual += 1;
-
-        if (parrilla[i - 1][j + 1] == ESTADO_SLOT::JUGADOR2 &&
-            parrilla[i - 2][j + 2] == ESTADO_SLOT::JUGADOR2 &&
-            parrilla[i - 3][j + 3] == ESTADO_SLOT::JUGADOR2)
-          fuerzaDeColActual += 5;
-      }
-      if (fuerzaDeColActual == 9)
-        return j;
-
-      if (fuerzaDeColActual > fuerzaDeColCadidata) {
-        colCandidata = j;
-        fuerzaDeColCadidata = fuerzaDeColActual;
-        fuerzaDeColActual = 0;
+        deshacerJugada(parrilla, j, ficha);
       }
     }
   }
 
-  return colCandidata;
+  // CENTRO
+  if (columnaValida(parrilla, 3))
+    return 3;
+
+  // RANDOM
+  int col;
+  do {
+    col = rand() % 7;
+  } while (!columnaValida(parrilla, col));
+  return col;
+}
+
+bool AI::colocarFichaOp(ESTADO_SLOT (*parrilla)[7], int col) {
+
+  static const int filas = 6;
+  static const int columnas = 7;
+
+  if (!columnaValida(parrilla, col)) {
+    return false;
+  }
+
+  ESTADO_SLOT ficha = this->rolDeJugador == ESTADO_SLOT::JUGADOR1
+                          ? ESTADO_SLOT::JUGADOR2
+                          : ESTADO_SLOT::JUGADOR1;
+
+  for (int i = filas - 1; i >= 0; i--) {
+
+    if (col >= 0 && col < columnas && parrilla[i][col] == ESTADO_SLOT::VACIO) {
+      parrilla[i][col] = ficha;
+      return true;
+    }
+  }
+
+  return false;
 }

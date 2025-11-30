@@ -17,10 +17,10 @@ Partida::Partida(MODODEJUEGO modo, MODALIDAD modalidad, float screenWidth,
   }
 
   if (modalidad == MODALIDAD::HVSIA) {
-    this->jugador2 = AI();
+    this->jugador2 = AI(ESTADO_SLOT::JUGADOR2);
   } else if (modalidad == MODALIDAD::IAVSIA) {
-    this->jugador1 = AI();
-    this->jugador2 = AI();
+    this->jugador1 = AI(ESTADO_SLOT::JUGADOR1);
+    this->jugador2 = AI(ESTADO_SLOT::JUGADOR2);
   }
 }
 
@@ -39,7 +39,7 @@ void Partida::inicializarTablero() {
 
 int Partida::getTurno() { return this->turno; }
 
-bool Partida::getExisteGanador() { return this->existeGanador; }
+bool Partida::getJuegoFinalizado() { return this->juegoFinalizado; }
 
 void Partida::aumentarMarcador() {
 
@@ -62,33 +62,37 @@ void Partida::aumentarMarcador() {
     std::cout << "Marcador" << std::endl;
     std::cout << "J1: " << this->marcador.puntosJ1 << std::endl;
     std::cout << "J2: " << this->marcador.puntosJ2 << std::endl;
-
-    if (this->finalizarJuego()) {
-
-      std::cout << "JUEGO FINALIZADO" << std::endl;
-      this->existeGanador = true;
-      return;
-    }
   }
 }
 
-bool Partida::tableroLleno() {
+bool Partida::existeGanador() {
+  if (this->finalizarJuego()) {
 
-  bool existeSlotVacio = false;
+    std::cout << "JUEGO FINALIZADO" << std::endl;
+
+    std::this_thread::sleep_for(
+        std::chrono::milliseconds(1000)); // Sleeps for 1 second
+    this->juegoFinalizado = true;
+    return true;
+  }
+
+  return false;
+}
+
+bool Partida::tableroLleno() {
 
   for (int i = 0; i < 6; i++) {
     for (int j = 0; j < 7; j++) {
       if (this->parrilla[i][j] == ESTADO_SLOT::VACIO ||
           this->parrilla[i][j] == ESTADO_SLOT::POSIBLE1 ||
           this->parrilla[i][j] == ESTADO_SLOT::POSIBLE2) {
-        existeSlotVacio = true;
-        std::cout << "Existe slot vacio: " << existeSlotVacio << std::endl;
-        break;
+        std::cout << "Existe slot vacio: " << false << std::endl;
+        return false;
       }
     }
   }
 
-  return existeSlotVacio;
+  return true;
 }
 
 bool Partida::finalizarJuego() {
@@ -98,12 +102,10 @@ bool Partida::finalizarJuego() {
       std::cout << "Modo de juego primero a 4" << std::endl;
       return true;
     }
-  }
-
-  if (this->modo == MODODEJUEGO::ACUMULADO) {
+  } else if (this->modo == MODODEJUEGO::ACUMULADO) {
 
     std::cout << "Modo de juego acumulado" << std::endl;
-    return !this->tableroLleno();
+    return this->tableroLleno();
   }
 
   return false;
@@ -119,6 +121,7 @@ void Partida::actualizarTablero() {
 
       this->turno = this->turno + 1;
       this->aumentarMarcador();
+      this->existeGanador();
     }
 
   } else if (this->modalidad == MODALIDAD::HVSIA) {
@@ -128,6 +131,7 @@ void Partida::actualizarTablero() {
       if (pasoTurno) {
         this->turno = this->turno + 1;
         this->aumentarMarcador();
+        this->existeGanador();
       }
     } else {
 
@@ -137,14 +141,47 @@ void Partida::actualizarTablero() {
       int col = this->jugador2.calcularJugada(this->parrilla);
 
       std::cout << "Columna calculada: " << col << std::endl;
-      this->tablero.actualizarTableroAi(this->parrilla, col);
+      this->tablero.actualizarTableroAi(this->parrilla, col,
+                                        ESTADO_SLOT::JUGADOR2);
       this->turno = this->turno + 1;
       this->aumentarMarcador();
+      this->existeGanador();
+
+      std::cout << "-----------------------------" << std::endl;
+      for (int i = 0; i < 6; i++) {
+        for (int j = 0; j < 7; j++) {
+          std::cout << (int)parrilla[i][j] << " ";
+        }
+        std::cout << std::endl;
+      }
+      std::cout << "-----------------------------" << std::endl;
     }
   } else if (this->modalidad == MODALIDAD::IAVSIA) {
 
-    // int col = this->jugador2.calcularJugada(this->parrilla);
-    // this->tablero.actualizarTableroAi(this->parrilla, col);
+    std::this_thread::sleep_for(
+        std::chrono::milliseconds(500)); // Sleeps for 1 second
+
+    if (this->turno % 2 != 0) {
+
+      int col = this->jugador1.calcularJugada(this->parrilla);
+      this->tablero.actualizarTableroAi(this->parrilla, col,
+                                        ESTADO_SLOT::JUGADOR1);
+
+      this->turno = this->turno + 1;
+
+      this->aumentarMarcador();
+      this->existeGanador();
+    } else {
+
+      int col = this->jugador2.calcularJugada(this->parrilla);
+      this->tablero.actualizarTableroAi(this->parrilla, col,
+                                        ESTADO_SLOT::JUGADOR2);
+
+      this->turno = this->turno + 1;
+
+      this->aumentarMarcador();
+      this->existeGanador();
+    }
   }
 }
 
@@ -161,6 +198,7 @@ bool Partida::verificarVictoria(ESTADO_SLOT jugador) {
           this->parrilla[i][j + 2] == jugador &&
           this->parrilla[i][j + 3] == jugador) {
 
+        /*
         if (jugador == ESTADO_SLOT::JUGADOR1) {
           this->parrilla[i][j] = ESTADO_SLOT::CONECTAJ1;
           this->parrilla[i][j + 1] = ESTADO_SLOT::CONECTAJ1;
@@ -173,6 +211,7 @@ bool Partida::verificarVictoria(ESTADO_SLOT jugador) {
           this->parrilla[i][j + 2] = ESTADO_SLOT::CONECTAJ2;
           this->parrilla[i][j + 3] = ESTADO_SLOT::CONECTAJ2;
         }
+        */
         return true;
       }
     }
@@ -185,6 +224,7 @@ bool Partida::verificarVictoria(ESTADO_SLOT jugador) {
           this->parrilla[i + 2][j] == jugador &&
           this->parrilla[i + 3][j] == jugador) {
 
+        /*
         if (jugador == ESTADO_SLOT::JUGADOR1) {
           this->parrilla[i][j] = ESTADO_SLOT::CONECTAJ1;
           this->parrilla[i + 1][j] = ESTADO_SLOT::CONECTAJ1;
@@ -197,7 +237,7 @@ bool Partida::verificarVictoria(ESTADO_SLOT jugador) {
           this->parrilla[i + 2][j] = ESTADO_SLOT::CONECTAJ2;
           this->parrilla[i + 3][j] = ESTADO_SLOT::CONECTAJ2;
         }
-
+*/
         return true;
       }
     }
@@ -210,6 +250,7 @@ bool Partida::verificarVictoria(ESTADO_SLOT jugador) {
           this->parrilla[i + 2][j + 2] == jugador &&
           this->parrilla[i + 3][j + 3] == jugador) {
 
+        /*
         if (jugador == ESTADO_SLOT::JUGADOR1) {
           this->parrilla[i][j] = ESTADO_SLOT::CONECTAJ1;
           this->parrilla[i + 1][j + 1] = ESTADO_SLOT::CONECTAJ1;
@@ -222,7 +263,7 @@ bool Partida::verificarVictoria(ESTADO_SLOT jugador) {
           this->parrilla[i + 2][j + 2] = ESTADO_SLOT::CONECTAJ2;
           this->parrilla[i + 3][j + 3] = ESTADO_SLOT::CONECTAJ2;
         }
-
+*/
         return true;
       }
     }
@@ -235,6 +276,7 @@ bool Partida::verificarVictoria(ESTADO_SLOT jugador) {
           this->parrilla[i - 2][j + 2] == jugador &&
           this->parrilla[i - 3][j + 3] == jugador) {
 
+        /*
         if (jugador == ESTADO_SLOT::JUGADOR1) {
           this->parrilla[i][j] = ESTADO_SLOT::CONECTAJ1;
           this->parrilla[i - 1][j + 1] = ESTADO_SLOT::CONECTAJ1;
@@ -247,7 +289,7 @@ bool Partida::verificarVictoria(ESTADO_SLOT jugador) {
           this->parrilla[i - 2][j + 2] = ESTADO_SLOT::CONECTAJ2;
           this->parrilla[i - 3][j + 3] = ESTADO_SLOT::CONECTAJ2;
         }
-
+*/
         return true;
       }
     }

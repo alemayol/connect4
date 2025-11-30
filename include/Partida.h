@@ -27,7 +27,7 @@ public:
   const ESTADO_SLOT (*getParrilla() const)[7];
   ESTADO_SLOT (*getParrilla())[7];
   Rectangle getLimitesTablero();
-  bool getExisteGanador();
+  bool getJuegoFinalizado();
   bool finalizarJuego();
   bool tableroLleno();
   // Tablero::ESTADO_SLOT **getParrilla();
@@ -36,6 +36,7 @@ public:
   void actualizarTablero();
   void inicializarTablero();
   bool verificarVictoria(ESTADO_SLOT jugador);
+  bool existeGanador();
   void aumentarMarcador();
 
 private:
@@ -44,7 +45,7 @@ private:
   MODALIDAD modalidad;
   Marcador marcador;
   int turno;
-  bool existeGanador;
+  bool juegoFinalizado;
   AI jugador1;
   AI jugador2;
   ESTADO_SLOT parrilla[6][7];

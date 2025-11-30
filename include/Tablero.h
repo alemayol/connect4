@@ -16,7 +16,8 @@ public:
   // Metodos
   void dibujarTablero(ESTADO_SLOT (*parrilla)[7]);
   bool actualizarTablero(ESTADO_SLOT (*parrilla)[7], int turno);
-  void actualizarTableroAi(ESTADO_SLOT (*parrilla)[7], int col);
+  void actualizarTableroAi(ESTADO_SLOT (*parrilla)[7], int col,
+                           ESTADO_SLOT ficha);
   static void dibujarTablero(Rectangle rec, const ESTADO_SLOT (*parrilla)[7]);
   static void actualizarTablero(Rectangle rec, ESTADO_SLOT (*parrilla)[7],
                                 int turno);

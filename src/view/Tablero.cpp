@@ -124,11 +124,12 @@ bool Tablero::actualizarTablero(ESTADO_SLOT (*parrilla)[7], int turno) {
   return clicked;
 }
 
-void Tablero::actualizarTableroAi(ESTADO_SLOT (*parrilla)[7], int col) {
+void Tablero::actualizarTableroAi(ESTADO_SLOT (*parrilla)[7], int col,
+                                  ESTADO_SLOT ficha) {
 
   for (int i = 6 - 1; i >= 0; i--) {
     if (col >= 0 && col < 7 && parrilla[i][col] == ESTADO_SLOT::VACIO) {
-      parrilla[i][col] = ESTADO_SLOT::JUGADOR2;
+      parrilla[i][col] = ficha;
       break;
     }
   }

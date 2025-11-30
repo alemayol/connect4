@@ -1,11 +1,21 @@
 #pragma once
 
+#include "EstadoSlot.h"
 #define AI_H
 #include "Jugador.h"
 
 class AI {
 public:
   AI();
-  void colocarFicha(int fila, int columna);
+  AI(ESTADO_SLOT rol);
+  bool posibleVictoriaOp(ESTADO_SLOT (*parrilla)[7]);
+  bool colocarFicha(ESTADO_SLOT (*parrilla)[7], int col);
+  bool colocarFichaOp(ESTADO_SLOT (*parrilla)[7], int col);
+  bool columnaValida(ESTADO_SLOT (*parrilla)[7], int col);
+  void deshacerJugada(ESTADO_SLOT (*parrilla)[7], int col, ESTADO_SLOT ficha);
+  bool jugadaGanadora(ESTADO_SLOT (*parrilla)[7], ESTADO_SLOT ficha);
   int calcularJugada(ESTADO_SLOT (*parrilla)[7]);
+
+private:
+  ESTADO_SLOT rolDeJugador;
 };

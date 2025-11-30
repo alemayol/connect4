@@ -62,7 +62,7 @@ void PantallaJuego::actualizarPantalla() {
 
   this->menu.btnListeners();
 
-  if (this->globalState->getPartidaActual()->getExisteGanador()) {
+  if (this->globalState->getPartidaActual()->getJuegoFinalizado()) {
     this->globalState->setPantallaActual(GameState::PANTALLA_PRINCIPAL);
     return;
   }
