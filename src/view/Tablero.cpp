@@ -52,12 +52,21 @@ void Tablero::dibujarTablero(ESTADO_SLOT (*parrilla)[7]) {
 
         break;
       case ESTADO_SLOT::POSIBLE1:
-        colorSlot = (Color){255, 255, 0, 150};
-
+        // colorSlot = (Color){255, 255, 0, 150};
+        colorSlot = Fade(YELLOW, 0.5);
         break;
       case ESTADO_SLOT::POSIBLE2:
-        colorSlot = (Color){255, 0, 0, 150};
+        // colorSlot = (Color){255, 0, 0, 150};
 
+        colorSlot = Fade(RED, 0.5);
+        break;
+      case ESTADO_SLOT::CONECTAJ1:
+
+        colorSlot = YELLOW;
+        break;
+      case ESTADO_SLOT::CONECTAJ2:
+
+        colorSlot = RED;
         break;
       }
       DrawCircle(posX, posY, radioSlot, colorSlot);
@@ -166,11 +175,19 @@ void Tablero::dibujarTablero(Rectangle rec, const ESTADO_SLOT (*parrilla)[7]) {
 
         break;
       case ESTADO_SLOT::POSIBLE1:
-        colorSlot = (Color){255, 255, 0, 100};
+        colorSlot = Fade(YELLOW, 0.5);
         break;
       case ESTADO_SLOT::POSIBLE2:
-        colorSlot = (Color){255, 0, 0, 100};
 
+        colorSlot = Fade(RED, 0.5);
+        break;
+      case ESTADO_SLOT::CONECTAJ1:
+
+        colorSlot = YELLOW;
+        break;
+      case ESTADO_SLOT::CONECTAJ2:
+
+        colorSlot = RED;
         break;
       }
       DrawCircle(posX, posY, radioSlot, colorSlot);

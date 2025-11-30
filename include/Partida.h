@@ -36,7 +36,7 @@ public:
   void actualizarTablero();
   void inicializarTablero();
   bool verificarVictoria(ESTADO_SLOT jugador);
-  void aumentarMarcador(ESTADO_SLOT jugador);
+  void aumentarMarcador();
 
 private:
   Tablero tablero;
