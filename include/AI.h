@@ -1,8 +1,7 @@
 #pragma once
 
-#include "EstadoSlot.h"
 #define AI_H
-#include "Jugador.h"
+#include "EstadoSlot.h"
 
 class AI {
 public:

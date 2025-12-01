@@ -1,8 +1,8 @@
 #include "../../include/Tablero.h"
 #include <algorithm>
-#include <iostream>
 #include <raylib.h>
 
+// Constructores
 Tablero::Tablero(float screenWidth, float screenHeight) {
   const float posTableroX = (screenWidth - 600) / 2;
   const float posTableroY = (screenHeight - 400) / 2;
@@ -12,6 +12,11 @@ Tablero::Tablero(float screenWidth, float screenHeight) {
   this->limites = {posTableroX, posTableroY, ancho, alto};
 };
 
+// Basado en la matriz argumento (la cual espera ser de 7 columnas) se dibuja el
+// cuadro principal representando el tablero y luego subsecuentes circulos
+// "transparentes" que indican un slot vacio. En caso de que la matriz tenga
+// valores de las fichas de los jugadores, pinta circulos del color
+// correspondiente
 void Tablero::dibujarTablero(ESTADO_SLOT (*parrilla)[7]) {
 
   Rectangle sombra = limites;
@@ -52,11 +57,9 @@ void Tablero::dibujarTablero(ESTADO_SLOT (*parrilla)[7]) {
 
         break;
       case ESTADO_SLOT::POSIBLE1:
-        // colorSlot = (Color){255, 255, 0, 150};
         colorSlot = Fade(YELLOW, 0.5);
         break;
       case ESTADO_SLOT::POSIBLE2:
-        // colorSlot = (Color){255, 0, 0, 150};
 
         colorSlot = Fade(RED, 0.5);
         break;
@@ -74,6 +77,9 @@ void Tablero::dibujarTablero(ESTADO_SLOT (*parrilla)[7]) {
   }
 }
 
+// Ya que modificamos el arreglo para hacer sugerencias visuales al usuario,
+// debemos restaurarlo para no dar falsos positivos cuando se verifique espacios
+// vacios en la matriz
 void Tablero::limpiarSugerencia(ESTADO_SLOT (*parrilla)[7]) {
 
   static const int fila = 6;
@@ -89,6 +95,8 @@ void Tablero::limpiarSugerencia(ESTADO_SLOT (*parrilla)[7]) {
   }
 }
 
+// Calculamos la posicion y accion del mouse del usuario efectuamos las
+// operaciones necesarias
 bool Tablero::actualizarTablero(ESTADO_SLOT (*parrilla)[7], int turno) {
 
   Vector2 posMouse = GetMousePosition();
@@ -98,22 +106,24 @@ bool Tablero::actualizarTablero(ESTADO_SLOT (*parrilla)[7], int turno) {
 
   if (CheckCollisionPointRec(posMouse, this->limites)) {
 
+    // Calculamos los limites que tiene una columna para saber cuando el usuario
+    // sobrepone el mouse sobre las distintas columnas
     int columna = (posMouse.x - this->limites.x) / (limites.width / 7);
 
     for (int i = 6 - 1; i >= 0; i--) {
       if (columna >= 0 && columna < 7 &&
           parrilla[i][columna] == ESTADO_SLOT::VACIO) {
 
+        // Si existe un click se cambia la variable bandera para indicar que se
+        // debe cambiar de turno en la partida
         if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
           parrilla[i][columna] =
               turno % 2 != 0 ? ESTADO_SLOT::JUGADOR1 : ESTADO_SLOT::JUGADOR2;
-          std::cout << "CLICK ON COL: " << columna << std::endl;
-          std::cout << "Turno: " << turno << std::endl;
-          std::cout << "Estado: " << (int)parrilla[i][columna] << std::endl;
           clicked = true;
           break;
         }
 
+        // Colocando sugerencia al usuario, color depende del turno
         parrilla[i][columna] =
             turno % 2 != 0 ? ESTADO_SLOT::POSIBLE1 : ESTADO_SLOT::POSIBLE2;
         break;
@@ -124,6 +134,7 @@ bool Tablero::actualizarTablero(ESTADO_SLOT (*parrilla)[7], int turno) {
   return clicked;
 }
 
+// Funcion utilizada por la AI para colocar una ficha
 void Tablero::actualizarTableroAi(ESTADO_SLOT (*parrilla)[7], int col,
                                   ESTADO_SLOT ficha) {
 
@@ -205,7 +216,6 @@ void Tablero::actualizarTablero(Rectangle rec, ESTADO_SLOT (*parrilla)[7],
 
     int columna = (posMouse.x - rec.x) / (rec.width / 7);
 
-    // std::cout << "Columna: " << columna << std::endl;
     for (int i = 6 - 1; i >= 0; i--) {
       if (columna >= 0 && columna < 7 &&
           parrilla[i][columna] == ESTADO_SLOT::VACIO) {
@@ -218,34 +228,3 @@ void Tablero::actualizarTablero(Rectangle rec, ESTADO_SLOT (*parrilla)[7],
 }
 
 Rectangle Tablero::getLimites() { return this->limites; }
-
-/*
-void Tablero::colocarFicha(Tablero::ESTADO_SLOT fichaJugador) {
-
-  for (int i = 0; i < 6 * 7; i++) {
-    int fila = i / 7;
-    int colum = i % 7;
-
-    if (fila >= 0 && fila < 6 && colum >= 0 && colum < 7) {
-      this->parrilla[fila][colum] = fichaJugador;
-    }
-  }
-}
-*/
-/*
-bool Tablero::slotDisponible(int col, Tablero::ESTADO_SLOT fichaJugador) {
-  if (col < 0 || col >= 7)
-    return false; // Fuera de limites, se accederia a memoria fuera de nuestros
-                  // limites
-
-  static const int fila = 6;
-
-  for (int i = fila - 1; i >= 0; i--) {
-    if (this->parrilla[i][col] == ESTADO_SLOT::VACIO) {
-      this->parrilla[i][col] = fichaJugador;
-      return true;
-    }
-  }
-
-  return false;
-}*/

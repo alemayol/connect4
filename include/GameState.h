@@ -1,10 +1,10 @@
 #pragma once
 
-#include "PartidaGuardada.h"
-#include <vector>
 #define GAMESTATE_H
 #include "Modalidad.h"
 #include "ModoDeJuego.h"
+#include "PartidaGuardada.h"
+#include <vector>
 
 #include "Partida.h"
 
@@ -33,7 +33,7 @@ public:
   bool getSalirDelJuego();
   std::vector<PartidaGuardada> getMemoryCard();
   void pushMemoryCard(Partida *partidaAGuardar);
-  void printSavedGames();
+  std::vector<Partida> getLastSavedGame();
 
 private:
   Partida *partidaActual;

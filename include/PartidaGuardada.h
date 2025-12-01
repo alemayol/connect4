@@ -20,6 +20,11 @@ public:
   static std::vector<PartidaGuardada>
   deserializarPartida(const std::string &nombreArchivo);
   Marcador getMarcador();
+  MODODEJUEGO getModoDeJuego();
+  MODALIDAD getModalidad();
+  int getTurno();
+  bool getJuegoFinalizado();
+  ESTADO_SLOT (*getTablero())[7];
 
 private:
   Marcador marcador;

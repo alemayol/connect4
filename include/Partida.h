@@ -1,9 +1,8 @@
 #pragma once
 
-#include "AI.h"
 #define PARTIDA_H
+#include "AI.h"
 #include "EstadoSlot.h"
-#include "Jugador.h"
 #include "Marcador.h"
 #include "Modalidad.h"
 #include "ModoDeJuego.h"
@@ -15,6 +14,9 @@ class Partida {
 public:
   Partida(MODODEJUEGO modo, MODALIDAD modalidad, float screenWidth,
           float screenHeight);
+
+  Partida(MODODEJUEGO modo, MODALIDAD modalidad, ESTADO_SLOT (*tablero)[7],
+          Marcador marcador, int turno, float screenWidth, float screenHeight);
 
   // Getters Setters
   int getTurno();
@@ -30,7 +32,6 @@ public:
   bool getFinalizado();
   bool finalizarJuego();
   bool tableroLleno();
-  void colocarFicha();
   bool slotDisponible();
   void actualizarTablero();
   void inicializarTablero();

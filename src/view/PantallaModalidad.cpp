@@ -1,12 +1,15 @@
 #include "../../include/PantallaSeleccionModalidad.h"
 #include <raylib.h>
 
+// Definimos estructura para facilitar la lectura y uso de los limites de los
+// rectangulos de los botones del menu de la pantalla
 typedef struct {
   Rectangle btnHvsH;
   Rectangle btnHvsIa;
   Rectangle btnIavsIa;
 } BtnsModalidad;
 
+// Constructores
 PantallaSeleccionModalidad::PantallaSeleccionModalidad(GameState *globalState,
                                                        float screenWidth,
                                                        float screenHeight) {
@@ -30,6 +33,8 @@ PantallaSeleccionModalidad::PantallaSeleccionModalidad(GameState *globalState,
        .height = 60},
   };
 
+  // Agregando botones al menu de la pantalla, en caso de click, se ajusta la
+  // modalidad elegida por el usuario en el estado global
   this->menu.agregarBoton(
       Boton(dimensiones.btnHvsH, "Jugador vs Jugador", BLUE,
             [this, screenWidth, screenHeight]() {
@@ -62,13 +67,15 @@ PantallaSeleccionModalidad::PantallaSeleccionModalidad(GameState *globalState,
             }));
 };
 
+// Basado en el tamano de la pantalla del usuario calculamos y dibujamos la
+// pantalla
 void PantallaSeleccionModalidad::dibujarPantalla(float screenWidth,
                                                  float screenHeight) {
 
   static const float fontSize = 60;
   static Font defaultFont = GetFontDefault();
   static const char *gameTitle = "Elija una modalidad";
-  static const float spacing = 0.0f;
+  static const float spacing = 3.5f;
 
   Vector2 titleWidth =
       (MeasureTextEx(defaultFont, gameTitle, fontSize, spacing));

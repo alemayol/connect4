@@ -1,10 +1,13 @@
 #include "../../include/PantallaSeleccionModo.h"
 
+// Definimos estructura para facilitar la lectura y uso de los limites de los
+// rectangulos de los botones del menu de la pantalla
 typedef struct {
   Rectangle btnPrimeroA4;
   Rectangle btnAcumulado;
 } BtnsModos;
 
+// Constructores
 PantallaSeleccionModo::PantallaSeleccionModo(GameState *globalState,
                                              float screenWidth,
                                              float screenHeight) {
@@ -23,6 +26,9 @@ PantallaSeleccionModo::PantallaSeleccionModo(GameState *globalState,
        .height = 60},
   };
 
+  // Agregando botones al menu de la pantalla, en caso de click, se ajusta el
+  // modo de juego elegido por el usuario en el estado global y se cambia de
+  // pantalla
   this->menu.agregarBoton(
       Boton(dimension.btnPrimeroA4, "Primero a 4", BLUE, [this]() {
         this->globalState->setModoDeJuego(MODODEJUEGO::PRIMEROA4);
@@ -41,7 +47,7 @@ void PantallaSeleccionModo::dibujarPantalla(float screenWidth,
   static const float fontSize = 60;
   static Font defaultFont = GetFontDefault();
   static const char *title = "Elija un modo de juego";
-  static const float spacing = 0.0f;
+  static const float spacing = 3.5f;
 
   static const Vector2 titleWidth =
       (MeasureTextEx(defaultFont, title, fontSize, spacing));

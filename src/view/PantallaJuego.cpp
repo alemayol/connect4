@@ -1,9 +1,14 @@
 #include "../../include/PantallaJuego.h"
 #include "../../include/Partida.h"
-#include "../../include/Tablero.h"
-#include <iostream>
 #include <raylib.h>
 
+// Definimos estructura para facilitar la lectura y uso de los limites de los
+// rectangulos de los botones del menu de la pantalla
+typedef struct {
+  Rectangle btnVolver;
+} BtnsMenuJuego;
+
+// Constructores
 PantallaJuego::PantallaJuego(GameState *globalState, float screenWidth,
                              float screenHeight) {
   this->globalState = globalState;
@@ -12,10 +17,12 @@ PantallaJuego::PantallaJuego(GameState *globalState, float screenWidth,
   this->screenHeight = screenHeight;
 };
 
-// PantallaJuego::PantallaJuego(float screenWidth, float screenHeight) {};
-
+// Basado en el tamano de la pantalla del usuario calculamos y dibujamos la
+// pantalla
 void PantallaJuego::dibujarPantalla(float screenWidth, float screenHeight) {
 
+  // Establecemos el tamano de fuente, la fuente, titulo de la pantalla y
+  // espaciado del texto
   static const float fontSize = 60;
   static Font defaultFont = GetFontDefault();
   static const char *gameTitle = "Juego en marcha";
@@ -26,49 +33,42 @@ void PantallaJuego::dibujarPantalla(float screenWidth, float screenHeight) {
   int titleLocationX = (screenWidth - titleWidth.x) / 2;
   int titleLocationY = screenHeight / 12;
 
-  // Dibujando titulos y subtitulos de menu principal
+  // Dibujando titulos y menu
   DrawTextEx(defaultFont, gameTitle,
              {(float)titleLocationX, (float)titleLocationY}, fontSize, spacing,
              DARKGRAY);
 
-  const float posTableroX = (screenWidth - 600) / 2;
-  const float posTableroY = (screenHeight - 400) / 2;
-  const float ancho = 600;
-  const float alto = 400;
+  BtnsMenuJuego btns = {
+      // Volver al menu principal
+      {.x = 10, .y = 50, .width = 150, .height = 60},
+  };
 
-  // Tablero::dibujarTablero(this->partida->getLimitesTablero(),
-  //                       this->partida->getParrilla());
+  // Agregamos botones al menu de la pantalla
+  this->menu.agregarBoton(Boton(btns.btnVolver, "Volver", BLUE, [this]() {
+    // En caso de click, se regresa a la pantalla principal
+    this->globalState->setPantallaActual(GameState::PANTALLA_PRINCIPAL);
+    // En caso de volver durante una partida en marcha, se guarda la partida en
+    // la memory card para reestablecerla despues (por hacer)
+    this->globalState->pushMemoryCard(this->globalState->getPartidaActual());
+  }));
 
+  // Se pinta el tablero en pantalla
   this->globalState->getPartidaActual()->inicializarTablero();
 }
 
-void PantallaJuego::mostrarGanador() {
-  /*
-  if (this->ganador) {
-
-    Rectangle popup = {screenWidth - 400, screenHeight - 200, 400,200};
-
-    BeginDrawing();
-    // Obscurecer pantalla
-    DrawRectangle(0, 0, GetScreenWidth(), GetScreenHeight(), Fade(BLACK, 0.5f));
-
-    DrawRectangleRounded(popup, 0.05, 6, LIGHTGRAY);
-    EndDrawing();
-  }
-  */
-}
+// Mostrar al jugador ganador un popup indicando la victoria (POR HACER)
+void PantallaJuego::mostrarGanador() {}
 
 void PantallaJuego::actualizarPantalla() {
 
-  this->menu.btnListeners();
-
+  // Si la partida finalizo, vamos a la pantalla principal y guardamos partida
+  // en el historial de partidas (memory card)
   if (this->globalState->getPartidaActual()->getJuegoFinalizado()) {
     this->globalState->setPantallaActual(GameState::PANTALLA_PRINCIPAL);
     this->globalState->pushMemoryCard(this->globalState->getPartidaActual());
     return;
   }
+  // this->menu.btnListeners();
 
   this->globalState->getPartidaActual()->actualizarTablero();
-  // Tablero::actualizarTablero(this->partida->getLimitesTablero(),
-  //                          this->partida->getParrilla());
 }

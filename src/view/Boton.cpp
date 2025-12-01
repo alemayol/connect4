@@ -1,8 +1,8 @@
 #include "../../include/Boton.h"
 #include "raylib.h"
-#include <iostream>
 #include <string>
 
+// Constructores
 Boton::Boton(Rectangle rec, std::string texto, Color color,
              std::function<void()> onClick) {
   this->texto = texto;
@@ -15,8 +15,9 @@ Boton::Boton(Rectangle rec, std::string texto, Color color,
   this->isActive = false;
 }
 
+// Calculamos ancho de texto de un boton (rectangulo) y para colocarlo en el
+// centro del boton
 Vector2 Boton::calcPosTexto(Rectangle limites) {
-  // Calculamos ancho de texto y lo colocamos en el centro del boton
   int anchoTexto = MeasureText(this->getTexto().c_str(), this->fontSize);
 
   return {
@@ -25,6 +26,11 @@ Vector2 Boton::calcPosTexto(Rectangle limites) {
   };
 }
 
+// Obtenemos la posicion actual del mouse para detectar si existe una colision
+// con el boton actual. De existir colision, se verifica la accion actual del
+// boton y se cambia el estado (color) actual del boton. De ser un click la
+// accion, se llama a la funcion lambda argumento pasada en el constructor del
+// boton
 void Boton::btnListener() {
 
   Vector2 posMouse = GetMousePosition();
@@ -36,18 +42,17 @@ void Boton::btnListener() {
     } else if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
       onClick();
       this->estado = EN_FOCO;
-      this->isActive = !this->isActive;
 
     } else {
       this->estado = EN_FOCO;
-
-      // std::cout << "Hover" << std::endl;
     }
   } else {
     this->estado = NORMAL;
   }
 }
 
+// Determinamos el color actual del boton basado en su estado y lo dibujamos en
+// pantalla
 void Boton::dibujarBoton() {
 
   Color colorActual = this->colorNormal;
@@ -72,13 +77,16 @@ void Boton::dibujarBoton() {
 
   Vector2 posTexto = this->calcPosTexto(this->rec);
 
-  // Dibujamos texto en pantalla
+  // Dibujamos texto en pantalla en la misma posicion (encima) del boton
   DrawText(this->getTexto().c_str(), posTexto.x, posTexto.y, this->fontSize,
            WHITE);
 }
 
+// Retorna color en estado normal (sin hover ni click) del boton
 Color Boton::getColor() { return this->colorNormal; }
 
+// Retorna el texto dentro del boton
 std::string Boton::getTexto() { return this->texto; }
 
+// Retorna los limites (posicion x,y, ancho y alto) del boton
 Rectangle Boton::getLimites() { return this->rec; }

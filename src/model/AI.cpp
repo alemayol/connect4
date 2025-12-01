@@ -1,10 +1,11 @@
 #include "../../include/AI.h"
-#include "../../include/Jugador.h"
-#include <iostream>
+#include <cstdlib>
 
+// Constructores de la clase
 AI::AI() {}
 AI::AI(ESTADO_SLOT rol) : rolDeJugador(rol) {}
 
+// Validamos que la columna solicitada este dentro de los rangos del tablero
 bool AI::columnaValida(ESTADO_SLOT (*parrilla)[7], int col) {
 
   static const int filas = 6;
@@ -13,15 +14,20 @@ bool AI::columnaValida(ESTADO_SLOT (*parrilla)[7], int col) {
   return (col >= 0 && col < columnas && parrilla[0][col] == ESTADO_SLOT::VACIO);
 }
 
+// Colocamos una ficha en el tablero 6x7 argumento
 bool AI::colocarFicha(ESTADO_SLOT (*parrilla)[7], int col) {
 
   static const int filas = 6;
   static const int columnas = 7;
 
+  // Chequeamos que la columna pasada sea valida para no acceder a memoria fuera
+  // de limites
   if (!columnaValida(parrilla, col)) {
     return false;
   }
 
+  // Se recorre el arreglo de forma vertical, marcando la ultima posicion libre
+  // con el color de la ficha del jugador (rol)
   for (int i = filas - 1; i >= 0; i--) {
 
     if (col >= 0 && col < columnas && parrilla[i][col] == ESTADO_SLOT::VACIO) {
@@ -33,6 +39,8 @@ bool AI::colocarFicha(ESTADO_SLOT (*parrilla)[7], int col) {
   return false;
 }
 
+// Basado en la ficha pasada y la columna, elimina la ultima ficha colocada en
+// el tablero en dicha columna y deja el slot en estado vacio
 void AI::deshacerJugada(ESTADO_SLOT (*parrilla)[7], int col,
                         ESTADO_SLOT ficha) {
 
@@ -46,6 +54,8 @@ void AI::deshacerJugada(ESTADO_SLOT (*parrilla)[7], int col,
   }
 }
 
+// Determina si existe una linea de 4 fichas del mismo color en las direcciones
+// permitidas, devuelve true de existir
 bool AI::jugadaGanadora(ESTADO_SLOT (*parrilla)[7], ESTADO_SLOT ficha) {
 
   static const int filas = 6;
@@ -92,17 +102,6 @@ int AI::calcularJugada(ESTADO_SLOT (*parrilla)[7]) {
   static const int filas = 6;
   static const int columnas = 7;
 
-  /*
-  std::cout << "-----------------------------" << std::endl;
-  for (int i = 0; i < filas; i++) {
-    for (int j = 0; j < columnas; j++) {
-      std::cout << (int)parrilla[i][j] << " ";
-    }
-    std::cout << std::endl;
-  }
-  std::cout << "-----------------------------" << std::endl;
-*/
-
   // Buscar victoria inmediata
   for (int i = 0; i < filas; i++) {
     for (int j = 0; j < columnas; j++) {
@@ -146,6 +145,8 @@ int AI::calcularJugada(ESTADO_SLOT (*parrilla)[7]) {
   return col;
 }
 
+// Colacamos la ficha del oponente en el tablero (utilizado para calcular una
+// posible victoria del rival)
 bool AI::colocarFichaOp(ESTADO_SLOT (*parrilla)[7], int col) {
 
   static const int filas = 6;
@@ -155,6 +156,7 @@ bool AI::colocarFichaOp(ESTADO_SLOT (*parrilla)[7], int col) {
     return false;
   }
 
+  // Basado en el rol de la AI actual, determinamos la ficha del oponente
   ESTADO_SLOT ficha = this->rolDeJugador == ESTADO_SLOT::JUGADOR1
                           ? ESTADO_SLOT::JUGADOR2
                           : ESTADO_SLOT::JUGADOR1;

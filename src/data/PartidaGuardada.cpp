@@ -22,20 +22,26 @@ PartidaGuardada::PartidaGuardada(Marcador marcador, MODODEJUEGO modo,
   }
 };
 
+// Serializamos las partidas guardadas en el historial de partidas guardadas del
+// estado global del juego en un archivo binario. Por hacer: elaborar una lista
+// en la pantalla de historial con todas las partidas jugadas y guardadas
 void PartidaGuardada::serializarPartida(
     std::vector<PartidaGuardada> &memoryCard,
     const std::string &nombreArchivo) {
 
-  std::cout << "SERIALIZING!" << std::endl;
   std::ofstream file(nombreArchivo, std::ios::binary);
 
   if (file.is_open()) {
 
+    // Si el archivo pudo ser abierto, calculamos el tamano del vector de
+    // partidas guardadas
     size_t cantidadObjetos = memoryCard.size();
 
     file.write(reinterpret_cast<const char *>(&cantidadObjetos),
                sizeof(cantidadObjetos));
 
+    // Por cada partida guardada casteamos las propiedades como un caracter
+    // constante para serializarlo
     for (const PartidaGuardada &partida : memoryCard) {
       file.write(reinterpret_cast<const char *>(&partida.marcador),
                  sizeof(partida.marcador));
@@ -58,28 +64,26 @@ void PartidaGuardada::serializarPartida(
   }
 }
 
+// Deserializamos las partidas guardadas para cargarlas en memoria en el estado
+// global del juego. Por hacer: pantalla de historial
 std::vector<PartidaGuardada>
 PartidaGuardada::deserializarPartida(const std::string &nombreArchivo) {
 
   std::vector<PartidaGuardada> memoryCard;
 
-  std::cout << "YEs sir" << std::endl;
-
   std::ifstream file(nombreArchivo, std::ios::binary);
   if (!file.is_open()) {
     return memoryCard;
-    throw std::runtime_error("No se pudo abrir el archivo para lectura: " +
-                             nombreArchivo);
   }
 
-  // Read the number of saved games
+  // Leemos la cantidad de partidas guardadas
   size_t cantidadObjetos;
   file.read(reinterpret_cast<char *>(&cantidadObjetos),
             sizeof(cantidadObjetos));
 
-  // Read each game
+  // Leemos cada juego
   for (size_t i = 0; i < cantidadObjetos; ++i) {
-    // Read basic data members
+    // Establecemos los datos que queremos leer de la partida
     Marcador marcador;
     MODODEJUEGO modo;
     MODALIDAD modalidad;
@@ -94,10 +98,10 @@ PartidaGuardada::deserializarPartida(const std::string &nombreArchivo) {
     file.read(reinterpret_cast<char *>(&juegoFinalizado),
               sizeof(juegoFinalizado));
 
-    // Read the 2D array (6x7 board)
+    // Leemos el tablero (6 filas x 7 columnas)
     file.read(reinterpret_cast<char *>(tablero), 6 * 7 * sizeof(ESTADO_SLOT));
 
-    // Create PartidaGuardada object and add to vector
+    // Creamos el objeto y lo ponemos en el vector
     memoryCard.emplace_back(marcador, modo, modalidad, turno, juegoFinalizado,
                             tablero);
   }
@@ -107,3 +111,8 @@ PartidaGuardada::deserializarPartida(const std::string &nombreArchivo) {
 }
 
 Marcador PartidaGuardada::getMarcador() { return this->marcador; }
+int PartidaGuardada::getTurno() { return this->turno; }
+bool PartidaGuardada::getJuegoFinalizado() { return this->juegoFinalizado; }
+MODODEJUEGO PartidaGuardada::getModoDeJuego() { return this->modo; };
+MODALIDAD PartidaGuardada::getModalidad() { return this->modalidad; };
+ESTADO_SLOT (*PartidaGuardada::getTablero())[7] { return this->parrilla; }

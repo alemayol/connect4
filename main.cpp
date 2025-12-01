@@ -1,9 +1,7 @@
-#include "../../include/Principal.h"
+#include "./include/Principal.h"
 #include <cstdlib>
 #include <raylib.h>
 #include <vector>
-
-class ClaseEntrada {};
 
 int main() {
 

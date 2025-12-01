@@ -1,8 +1,7 @@
 #include "../../include/GameState.h"
-#include "../../include/Pantalla.h"
-#include <iostream>
 #include <vector>
 
+// Constructores
 GameState::GameState(std::vector<PartidaGuardada> memoryCard) {
   this->partidaActual = nullptr;
   this->modo = NINGUNO;
@@ -10,6 +9,8 @@ GameState::GameState(std::vector<PartidaGuardada> memoryCard) {
   this->pantallaActual = PANTALLA_PRINCIPAL;
   this->memoryCard = memoryCard;
 }
+
+// Setters Getters
 
 void GameState::setPartidaActual(Partida *nuevaPartida) {
   this->partidaActual = nuevaPartida;
@@ -30,22 +31,6 @@ void GameState::setPantallaActual(PANTALLA pantallaActual) {
   this->pantallaActual = pantallaActual;
 };
 
-void GameState::printSavedGames() {
-
-  // std::cout << "Here brother!" << std::endl;
-
-  // std::cout << "Size of memoryCard: " << this->memoryCard.size() <<
-  // std::endl;
-
-  int i = 1;
-
-  for (PartidaGuardada partida : memoryCard) {
-
-    std::cout << "Partida Guardada: " << i << std::endl;
-    i++;
-  }
-}
-
 GameState::PANTALLA GameState::getPantallaActual() {
   return this->pantallaActual;
 };
@@ -57,6 +42,36 @@ std::vector<PartidaGuardada> GameState::getMemoryCard() {
   return this->memoryCard;
 }
 
+// Metodos
+
+// Obtenemos las partidas guardadas en el estado global y retornamos un vector
+// con dichas partidas
+std::vector<Partida> GameState::getLastSavedGame() {
+
+  std::vector<Partida> partidas;
+
+  float screenWidth = GetScreenWidth();
+  float screenHeight = GetScreenHeight();
+
+  for (PartidaGuardada partida : this->memoryCard) {
+
+    if (!partida.getJuegoFinalizado()) {
+
+      Partida nuevaPartida =
+          Partida(partida.getModoDeJuego(), partida.getModalidad(),
+                  partida.getTablero(), partida.getMarcador(),
+                  partida.getTurno(), screenWidth, screenHeight);
+
+      partidas.push_back(nuevaPartida);
+    }
+  }
+
+  return partidas;
+}
+
+// Con los datos de una partida guardada, creamos (recreamos) un objeto partida
+// que guardaremos para mostrar al usuario y restaurar el estado de un juego no
+// finalizado (por hacer)
 void GameState::pushMemoryCard(Partida *partidaAGuardar) {
 
   PartidaGuardada partida = PartidaGuardada(
@@ -66,5 +81,7 @@ void GameState::pushMemoryCard(Partida *partidaAGuardar) {
 
   this->memoryCard.push_back(partida);
 
+  // Luego de guardar la partida en el vector en memoria, serializamos el
+  // historial para asegurar el guardado inmediato
   PartidaGuardada::serializarPartida(this->memoryCard, "partidasConnect4");
 }

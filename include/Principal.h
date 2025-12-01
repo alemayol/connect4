@@ -1,8 +1,8 @@
 #pragma once
 
-#include "Partida.h"
 #define PRINCIPAL_H
 #include "GameState.h"
+#include "Partida.h"
 
 #include "raylib.h"
 
@@ -12,10 +12,6 @@ public:
   void IniciarPantallaPrincipal();
   void CerrarPantallaPrincipal();
 
-  // Setters
-  void setPartida(Partida *partida);
-
 private:
   GameState *globalState;
-  Partida *partida;
 };
